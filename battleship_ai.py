@@ -1,206 +1,254 @@
+'''
+CS 5100 Proj:   Battleship
+Team:           BigLeg
+Last Modified:  03/21/2014
+'''
 import random
 
-# Prints the map in readable form
-def printmap (map):
-    print (" ")
-    for i in range (0, 10):
-         print (map[i][0],map[i][1],map[i][2],map[i][3],map[i][4],map[i][5],map[i][6],map[i][7],map[i][8],map[i][9])
+MAPSIZE = 10
+HEALTH = 17
+EXPLORED = ' '
+UNEXPLORED = '-'
+OCCUPIED = 'X'
+HIT = 'H'
+MISS = 'M'
 
-# Find the maximum value of the map
-def mapmax (map):
-	result = 0
-	for i in range (0,10):
-		for j in range (0,10):
-		   if map [i][j] > result:
+# An arrangement of ships for testing.
+TEST_ARRANGEMENT = [
+    (0,0), (0,1), (0,2), (0,3), (0,4),
+    (1,0), (1,1), (1,2), (1,3),
+    (2,5), (3,5), (4,5),
+    (7,7), (8,7), (9,7),
+    (8,9), (9,9)]
 
-			   result = map [i][j]
-	return result
+class Map:
 
-# Find the coordinates of the target in the map
-# This and mapmax are used to help AI locate target
-def maxcoordinates (map, target):
-	coordinates = []
-	for i in range (0,10):
-	  for j in range (0,10):
-	     if map [i][j] == target:
-	         coordstring = str(i) + str(j)
-	         coordinates.append(coordstring)
+    m = None
+    size = 0
 
-	result = random.choice(coordinates)
-	return result
+    def __init__(self, **kwargs):
+        for k, v in kwargs.iteritems():
+            setattr(self, k, v)
 
-# Declaring the board
+    def generate_player_map(self, occupied):
+        ''' Generate player map for human or agent.
+            Take a list of ship arrangement as input
+            and mark them as occupied.
+        '''
+        map_range = range(0, self.size)
+        row = [EXPLORED for i in map_range]
+        self.m = [row[:] for i in map_range]
+        for (x,y) in occupied:
+            self.m[x][y] = OCCUPIED
 
-# Worlds represented as a two-dimensional array:
+    def generate_ai_enemy_map(self):
+        ''' Generate enemy map for agent.
+        '''
+        map_range = range(0, self.size)
+        row = [0 for i in map_range]
+        self.m = [row[:] for i in map_range]
+        # Encourage Hunt-and-Target - make even
+        # cells a slightly higher priority
+        even = False
+        for i in map_range:
+            for j in map_range:
+                if even:
+                    self.m[i][j] = 1
+                even = not even
+            even = not even
 
-# Map of the player, as seen by the AI:
-# Number on each cell represents priority. Cells
-# with higher priority get taken out first.
-global playervague
-playervague = []
-newpv = []
-for i in range (0, 10):
- for j in range (0, 10):
-     newpv.append(5)
- playervague.append(newpv)
- newpv = []
+    def generate_human_enemy_map(self):
+        ''' Generate enemy map for human.
+        '''
+        map_range = range(0, self.size)
+        row = [UNEXPLORED for i in map_range]
+        self.m = [row[:] for i in map_range]
 
-# Encourage Hunt-and-Target - make even
-# cells a slightly higher priority
-# It has 6's in one row, 5's in the next and so on
-# Will be fixed for the final version
-for i in range (0, 10):
-# x = (i-1)*2
- for j in range (0, 5):
-    y = (j-1)*2
-    playervague [i][y] = 6
+    def print_map(self):
+        ''' Prints the map in readable form.
+        '''
+        for i in range(0, self.size):
+            for j in range(0, self.size):
+                print self.m[i][j],
+            print ''
 
-printmap (playervague)
+    def mapmax(self):
+        ''' Find the maximum value of the map for agent
+        '''
+        result = 0
+        for i in range(0, self.size):
+            for j in range(0, self.size):
+               if self.m[i][j] > result:
+                   result = self.m[i][j]
+        return result
 
-# Map of the AI, as seen by the player
-# H stands for hit, M stands for miss,
-# X stands for unknown
-global aivague
-aivague = []
-newav = []
-for i in range (0, 10):
- for j in range (0, 10):
-     newav.append("X")
- aivague.append(newav)
- newav = []
+    def maxcoordinates(self, target):
+        ''' Find the coordinates of the target in the map for agent
+            This and mapmax are used to help AI locate target
+        '''
+        coordinates = []
+        for i in range(0, self.size):
+          for j in range(0, self.size):
+             if self.m[i][j] == target:
+                 coordinates.append((i,j))
+        return random.choice(coordinates)
 
-printmap (aivague)
+    def mark_adjacent_coords(self, (x,y), score):
+        ''' Hunt-and-Target
+            For agent enemy map: find unexplored adjacent coordinates
+            and mark them with score.
+        '''
+        for (ax,ay) in self.find_adjacent_by_xy((x,y)):
+            if self.m[ax][ay] > -1:
+                self.m[ax][ay] = score
 
-# Map of the player as seen by the player:
-# A stands for ship, O stands for Unoccupied,
-# X stands for hit
-global playermap
-playermap = []
-newpm = []
-for i in range (0, 10):
- for j in range (0, 10):
-     newpm.append("O")
- playermap.append(newpm)
- newpm = []
+    def find_adjacent_by_xy(self, (x,y)):
+        ''' Find neighbors of a given coordinate.
+        '''
+        nbs = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
+        for nb in nbs:
+            if not self.in_range(nb):
+                nbs.remove(nb)
+        return nbs
 
-# Map of the AI as seen by the AI:
-# A stands for ship, O stands for Unoccupied,
-# X stands for hit
-global aimap
-aimap = []
-newam = []
-for i in range (0, 10):
- for j in range (0, 10):
-     newam.append("O")
- aimap.append(newam)
- newam = []
+    def in_range(self, (x,y)):
+        ''' Tell if a coordinate is in map range
+        '''
+        if (0 <= x <= self.size) and (0 <= y <= self.size):
+            return True
+        return False
 
-# Populate the maps:
-# Later, we will of course enable the player
-# to choose his own locations and randomize AI's
-# locations, but for now, the code below gives them
-# static locations
+    def get(self, (x,y)):
+        ''' getter
+        '''
+        return self.m[x][y]
 
-playermap[0][0] = "A"
-playermap[0][1] = "A"
-playermap[0][2] = "A"
-playermap[0][3] = "A"
-playermap[0][4] = "A"
+    def set(self, (x,y), val):
+        ''' setter
+        '''
+        self.m[x][y] = val
 
-playermap[1][0] = "A"
-playermap[1][1] = "A"
-playermap[1][2] = "A"
-playermap[1][3] = "A"
 
-playermap[2][5] = "A"
-playermap[3][5] = "A"
-playermap[4][5] = "A"
+class Player:
 
-playermap[7][7] = "A"
-playermap[8][7] = "A"
-playermap[9][7] = "A"
+    my_map = None
+    enemy_map = None
+    health = 0
 
-playermap[8][9] = "A"
-playermap[9][9] = "A"
+    def __init__(self, **kwargs):
+        for k, v in kwargs.iteritems():
+            setattr(self, k, v)
 
-printmap (playermap)
+    def attack(self, enemy, (x,y)):
+        ''' Attack an enemy coordinate and mark result on
+            own enemy map.
+        '''
+        self.enemy_map.set((x,y), enemy.hit((x,y)))
 
-# Same arrangement for AI map -
-# doesn't really matter for now
+    def hit(self, (x,y)):
+        ''' Takes a hit from enemy, calculate score
+            and return result to enemy.
+        '''
+        if self.my_map.get((x,y)) == OCCUPIED:
+            self.my_map.set((x,y), ' ')
+            self.health = self.health - 1
+            return HIT
+        return MISS
 
-aimap[0][0] = "A"
-aimap[0][1] = "A"
-aimap[0][2] = "A"
-aimap[0][3] = "A"
-aimap[0][4] = "A"
+    def lose(self):
+        ''' Tell if player is defeated.
+        '''
+        return True if self.health == 0 else False
 
-aimap[1][0] = "A"
-aimap[1][1] = "A"
-aimap[1][2] = "A"
-aimap[1][3] = "A"
 
-aimap[2][5] = "A"
-aimap[3][5] = "A"
-aimap[4][5] = "A"
+class Agent(Player):
 
-aimap[7][7] = "A"
-aimap[8][7] = "A"
-aimap[9][7] = "A"
+    def attack(self, enemy, (x,y)):
+        ''' Attack a human coordinate and mark priority score
+            on own enemy map.
+        '''
+        if enemy.hit((x,y)) == HIT:
+            self.enemy_map.mark_adjacent_coords((x,y), 2)
+        self.enemy_map.set((x,y), -1)
 
-aimap[8][9] = "A"
-aimap[9][9] = "A"
+    def find_target(self):
+        ''' Find the next target for attack.
+        '''
+        return self.enemy_map.maxcoordinates(self.enemy_map.mapmax())
 
-printmap (aimap)
 
-# THIS LAST SECTION MAKES THE MOVES
-# COPY AND PASTE OVER AND OVER AGAIN TO
-# MAKE MORE MOVES.
+class Human(Player):
 
-# This will be fixed in the final version of course.
-# Also, enter valid numbers, or the code will crash.
-# This will also be fixed.
+    def attacked_before(self, (x,y)):
+        ''' Tell if a coordinate was attacked before
+        '''
+        return False if self.enemy_map.get((x,y)) == UNEXPLORED else True
 
-# Prompt a move: enter 11 to hit cell 1, 1
-# Count starts from 0. Read in the move.
 
-var = input("Make a move: ")
-xc = int(var[:-1])
-yc = int(var[1:])
+def init_human(mapsize, arrangement, health):
+    ''' Init human object.
+    '''
+    my_map = Map(size=mapsize)
+    my_map.generate_player_map(arrangement)
+    enemy_map = Map(size=mapsize)
+    enemy_map.generate_human_enemy_map()
+    return Human(my_map=my_map, enemy_map=enemy_map, health=health)
 
-# Update corresponding maps
-if (aimap [xc][yc] == "A"):
-	aivague [xc][yc] = "H"
-else:
-	aivague [xc] [yc] = "M"
-aimap [xc][yc] = "X"
+def init_agent(mapsize, arrangement, health):
+    ''' Init agent.
+    '''
+    my_map = Map(size=mapsize)
+    my_map.generate_player_map(arrangement)
+    enemy_map = Map(size=mapsize)
+    enemy_map.generate_ai_enemy_map()
+    return Agent(my_map=my_map, enemy_map=enemy_map, health=health)
 
-# Have the AI make a move:
-# Print the move:
-maxcoord = maxcoordinates(playervague, mapmax(playervague))
-xai = int (maxcoord[:-1])
-yai = int (maxcoord[1:])
-print ("The computer makes a move:", xai, yai)
 
-# Update corresponding maps
-playervague [xai][yai] = 0
-if playermap [xai][yai] == "A":
-	if xai > 0:
-	  if playervague[xai-1][yai] > 0:	
-	           playervague[xai-1][yai] = 9
-	if xai < 9:
-	  if playervague[xai+1][yai] > 0:	
-	           playervague[xai+1][yai] = 9
-	if yai > 0:
-	   if playervague[xai][yai-1] > 0:	
-	           playervague[xai][yai-1] = 9
-	if yai < 9:
-	   if playervague[xai][yai+1] > 0:	
-	           playervague[xai][yai+1] = 9
-playermap [xai][yai] = "X"
+if __name__ == '__main__':
 
-# Print current state of four boards
-printmap (playervague)
-printmap (playermap)
-printmap (aivague)
-printmap (aimap)
+    human = init_human(MAPSIZE, TEST_ARRANGEMENT, HEALTH)
+    agent = init_agent(MAPSIZE, TEST_ARRANGEMENT, HEALTH)
+    human_turn = True
 
+    while True:
+        print 'human map'
+        human.my_map.print_map()
+        print 'agent map from human perspective'
+        human.enemy_map.print_map()
+        print 'agent map'
+        agent.my_map.print_map()
+        print 'human map from agent perspective'
+        agent.enemy_map.print_map()
+        if human_turn:
+            # Prompt a move: enter 11 to hit cell 1, 1
+            # Count starts from 0. Read in the move.
+            var = raw_input("Make a move: ")
+
+            # Check input length
+            if not ((len(var) > 0) and (len(var) < 3)):
+                print 'Please enter valid coordinates'
+                continue
+            x, y = int(var[:-1]), int(var[1:])
+            # Check if that coordinate was attacked before
+            if human.attacked_before((x,y)):
+                print var, 'was attacked before.'
+                continue
+
+            # Update corresponding maps
+            human.attack(agent, (x,y))
+
+            if agent.lose():
+                print 'Human won'
+                break
+
+            human_turn = not human_turn
+        else:
+            # Have the AI make a move
+            target = agent.find_target()
+            print 'AI attacked', target
+            agent.attack(human, target)
+            if human.lose():
+                print 'AI won'
+                break
+
+            human_turn = not human_turn
