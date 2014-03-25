@@ -36,7 +36,7 @@ def main():
 
     firstSelection = None
 
-    pygame.mixer.music.load('backgroundmusic.mp3') # load the background music
+    pygame.mixer.music.load('bgm.mp3') # load the background music
     pygame.mixer.music.play(-1, 0.0)
     showStartScreen()
     
