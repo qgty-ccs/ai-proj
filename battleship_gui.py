@@ -1,3 +1,8 @@
+'''
+CS 5100 Proj:   Battleship
+Team:           BigLeg
+Last Modified:  03/28/2014
+'''
 
 import random, pygame, sys, time
 from pygame.locals import *

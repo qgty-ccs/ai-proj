@@ -1,8 +1,9 @@
 '''
 CS 5100 Proj:   Battleship
 Team:           BigLeg
-Last Modified:  03/21/2014
+Last Modified:  03/28/2014
 '''
+
 import copy
 import random
 
@@ -214,6 +215,8 @@ class Agent(Player):
         return result
 
     def reach_edge(self):
+        ''' Tell if the current direction reaches the map edge.
+        '''
         x, y = self.current
         direction = self.direction
         if direction == -1:
@@ -241,6 +244,8 @@ class Agent(Player):
         # return self.choice(self.find_highest_priority())
 
     def hunt(self):
+        ''' Hunt mode
+        '''
         print 'hunt'
         return self.choice(0)
 
@@ -248,6 +253,7 @@ class Agent(Player):
         '''
         keep track of cell discovered, possible directions, remaining ships
         and find the best candidate to attack.
+        TODO tear into sub-methods
         '''
         m = self.enemy_map
         base = self.base
@@ -353,8 +359,9 @@ class Agent(Player):
 
         return next
 
-
     def determine_direction(self, (x,y), base):
+        ''' Determine the direction from (x,y) to base.
+        '''
         bx, by = base
         if y == by - 1:
             return -1
@@ -367,6 +374,8 @@ class Agent(Player):
         return None
 
     def evaluate_direction(self, (x,y), base):
+        ''' Tell if the given direction is applicable.
+        '''
         bx, by = base
         direction = self.determine_direction((x,y), base)
         for ship in self.remain_ships:
@@ -377,6 +386,9 @@ class Agent(Player):
 
 
     def have_continous_cells(self, direction, base, length, size):
+        ''' Tell if a direction has <length> continous undiscovered cells
+            in a row starting from base.
+        '''
         bx, by = base
         m = self.enemy_map
         if direction == -1:
@@ -403,6 +415,8 @@ class Agent(Player):
         return False
 
     def moveon(self):
+        ''' Continue moving to current direction.
+        '''
         direction = self.direction
         x, y = self.current
         if direction == -1: # up
