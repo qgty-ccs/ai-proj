@@ -1,0 +1,53 @@
+The algorithm
+
+At the beginning of a game (or after a round of attacks), AI knows nothing about enemy's arrangement. The only thing AI can do at this stage is hitting random positions until a part of enemy's ship is discovered. This mode is called hunt mode. By applying parity (hit even cells only), hunt mode can be 50% more efficient than pure randomness.
+
+Once a coordinate (x, y) is found to be a part of a ship, AI will use it as base coordinate and choose a direction from base (up, down, left, or right) as the attack direction. AI will then keep attacking coordinates on this direction until further attack is impossible (e.g. reaches wall). This mode is called target mode.
+
+Instead of hitting neighbor squares around base randomly, the algorithm will choose a most possible direction which might reveal the rest of the ship. For example, if four undiscovered squares in a row are found on that direction, it indicates that mothership might hide under them. If goes one step toward that direction but finds nothing, AI goes back to base, chooses another direction from candidates, and continues. If AI cannot move any further toward the current direction, it can either go to opposite direction, or stop and return to hunt mode. This decision is based on map environment and current status of enemy's fleet.
+
+A psuedo-code version:
+
+function hunt-target():
+	if currently under hunt mode:
+		return hunt()
+	else:
+		return target()
+		
+function hunt():
+	return a random choice of undiscovered coordinate on enemy's map
+	
+function target():
+	if direction is not set:
+		evaluate all possible directions from base
+		choose a direction d which can have other parts of ship
+		set direction to d
+		return d->next
+		
+	else if direction is wrong:	
+		# try to discover more parts of ship at that direction,
+		# but failed
+		choose another possible direction from base
+		set direction to d
+		return d->next
+		
+	else if reaches end or reaches edge:
+		# miss after a series of continous hits
+		# or reach map edge
+		if the longest ship in enemy's fleet is sunk:
+			enter hunt mode
+		else:
+			if opposite direction is available:
+				go to opposite direction
+			else:
+				enter hunt mode
+				
+	else:
+		continue attacking on current direction
+		
+The currently implemented version is more complex than the algorithm above, but shares the same concept.
+
+A few problems remain to be solved:
+- A smart fleet arrangement of AI needs to be sparse, and contains some degree of randomization to be unpredictable. 
+- In hunt mode, if some larger ships are undiscovered yet, isolated areas of smaller length can be excluded.
+- AI can remember opponent's playing habit (arrangements, "preferred" attacking areas) and use this information to optimize decision in future.
