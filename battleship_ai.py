@@ -6,6 +6,7 @@ Last Modified:  04/03/2014
 
 import copy
 import random
+# import randomgen.assignailoc
 
 MAPSIZE = 10
 HEALTH = 17
@@ -14,6 +15,9 @@ UNEXPLORED = '-'
 OCCUPIED = 'X'
 HIT = 'H'
 MISS = 'M'
+
+available = [(0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (0,9), (1,0), (1,1), (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9),(2,0), (2,1), (2,2), (2,3), (2,4), (2,5), (2,6), (2,7), (2,8), (2,9),(3,0), (3,1), (3,2), (3,3), (3,4), (3,5), (3,6), (3,7), (3,8), (3,9),(4,0), (4,1), (4,2), (4,3), (4,4), (4,5), (4,6), (4,7), (4,8), (4,9),(5,0), (5,1), (5,2), (5,3), (5,4), (5,5), (5,6), (5,7), (5,8), (5,9),(6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7), (6,8), (6,9),(7,0), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7), (7,8), (7,9),(8,0), (8,1), (8,2), (8,3), (8,4), (8,5), (8,6), (8,7), (8,8), (8,9),(9,0), (9,1), (9,2), (9,3), (9,4), (9,5), (9,6), (9,7), (9,8), (9,9)]
+
 
 # An arrangement of ships for testing.
 TEST_ARRANGEMENT = [
@@ -215,7 +219,8 @@ class Agent(Player):
         '''
         Generate a randomized sparse arrangement of fleet.
         '''
-        return TEST_ARRANGEMENT    
+        # return TEST_ARRANGEMENT   
+        return assignailoc() 
 
     def attack(self, enemy, (x,y)):
         ''' Attack a coordinate in Hunt-and-Target mode.
@@ -520,6 +525,144 @@ def array_to_arrangement(array):
             if array[i][j] == '1':
                 arrangement.append((i,j))
     return arrangement
+
+def assignship(length, dir):
+
+    startav = [(0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (0,9), (1,0), (1,1), (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9),(2,0), (2,1), (2,2), (2,3), (2,4), (2,5), (2,6), (2,7), (2,8), (2,9),(3,0), (3,1), (3,2), (3,3), (3,4), (3,5), (3,6), (3,7), (3,8), (3,9),(4,0), (4,1), (4,2), (4,3), (4,4), (4,5), (4,6), (4,7), (4,8), (4,9),(5,0), (5,1), (5,2), (5,3), (5,4), (5,5), (5,6), (5,7), (5,8), (5,9),(6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7), (6,8), (6,9),(7,0), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7), (7,8), (7,9),(8,0), (8,1), (8,2), (8,3), (8,4), (8,5), (8,6), (8,7), (8,8), (8,9),(9,0), (9,1), (9,2), (9,3), (9,4), (9,5), (9,6), (9,7), (9,8), (9,9)]
+
+    random.shuffle(startav)
+    start = startav[0]
+
+    if (length == 5):
+        if (dir == 'r'):
+          if ((available.count(start) > 0) and (available.count((start[0]+1, start[1])) > 0) and (available.count((start[0]+2, start[1])) > 0) and (available.count((start[0]+3, start[1])) > 0) and (available.count((start[0]+4, start[1])) > 0)):
+ 
+                                        shiplocarray = [start, (start[0]+1, start[1]), (start[0]+2, start[1]), (start[0]+3, start[1]), (start[0]+4, start[1])]
+                                        available.remove(start)
+                                        available.remove((start[0]+1, start[1]))
+                                        available.remove((start[0]+2, start[1]))
+                                        available.remove((start[0]+3, start[1]))
+                                        available.remove((start[0]+4, start[1]))
+                                        return shiplocarray
+          else:
+                                        startav.remove(start)
+                                        return assignship(length, dir)
+                    
+
+        if (dir == 'd'):
+          if ((available.count(start) > 0) and (available.count((start[0], start[1]+1)) > 0) and (available.count((start[0], start[1]+2)) > 0) and (available.count((start[0], start[1]+3)) > 0) and (available.count((start[0], start[1]+4)) > 0)):
+
+                                        shiplocarray = [start, (start[0], start[1]+1), (start[0], start[1]+2), (start[0], start[1]+3), (start[0], start[1]+4)]
+                                        available.remove(start)
+                                        available.remove((start[0], start[1]+1))
+                                        available.remove((start[0], start[1]+2))
+                                        available.remove((start[0], start[1]+3))
+                                        available.remove((start[0], start[1]+4))
+                                        return shiplocarray
+          else:
+                                        startav.remove(start)
+                                        return assignship(length, dir)
+
+    if (length == 4):
+     if (dir == 'r'):
+      if ((available.count(start) > 0) and (available.count((start[0]+1, start[1])) > 0) and (available.count((start[0]+2, start[1])) > 0) and (available.count((start[0]+3, start[1])) > 0)):
+
+                                    shiplocarray = [start, (start[0]+1, start[1]), (start[0]+2, start[1]), (start[0]+3, start[1])]
+                                    available.remove(start)
+                                    available.remove((start[0]+1, start[1]))
+                                    available.remove((start[0]+2, start[1]))
+                                    available.remove((start[0]+3, start[1]))
+                                    return shiplocarray
+      else:
+                                    startav.remove(start)
+                                    return assignship(length, dir)
+                
+
+     if (dir == 'd'):
+      if ((available.count(start) > 0) and (available.count((start[0], start[1]+1)) > 0) and (available.count((start[0], start[1]+2)) > 0) and (available.count((start[0], start[1]+3)) > 0)):
+
+                                    shiplocarray = [start, (start[0], start[1]+1), (start[0], start[1]+2), (start[0], start[1]+3)]
+                                    available.remove(start)
+                                    available.remove((start[0], start[1]+1))
+                                    available.remove((start[0], start[1]+2))
+                                    available.remove((start[0], start[1]+3))
+                                    return shiplocarray
+      else:
+                                    startav.remove(start)
+                                    return assignship(length, dir)
+
+    if (length == 3):
+     if (dir == 'r'):
+      if ((available.count(start) > 0) and (available.count((start[0]+1, start[1])) > 0) and (available.count((start[0]+2, start[1])) > 0)):
+
+                                    shiplocarray = [start, (start[0]+1, start[1]), (start[0]+2, start[1])]
+                                    available.remove(start)
+                                    available.remove((start[0]+1, start[1]))
+                                    available.remove((start[0]+2, start[1]))
+                                    return shiplocarray
+      else:
+                                    startav.remove(start)
+                                    return assignship(length, dir)
+                
+
+     if (dir == 'd'):
+      if ((available.count(start) > 0) and (available.count((start[0], start[1]+1)) > 0) and (available.count((start[0], start[1]+2)) > 0)):
+
+                                    shiplocarray = [start, (start[0], start[1]+1), (start[0], start[1]+2)]
+                                    available.remove(start)
+                                    available.remove((start[0], start[1]+1))
+                                    available.remove((start[0], start[1]+2))
+                                    return shiplocarray
+      else:
+                                    startav.remove(start)
+                                    return assignship(length, dir)
+
+    if (length == 2):
+     if (dir == 'r'):
+      if ((available.count(start) > 0) and (available.count((start[0]+1, start[1])) > 0)):
+                                    shiplocarray = [start, (start[0]+1, start[1])]
+                                    available.remove(start)
+                                    available.remove((start[0]+1, start[1]))
+                                    return shiplocarray
+      else:
+                                    startav.remove(start)
+                                    return assignship(length, dir)
+                
+
+     if (dir == 'd'):
+      if ((available.count(start) > 0) and (available.count((start[0], start[1]+1)) > 0)):
+
+                                    shiplocarray = [start, (start[0], start[1]+1)]
+                                    available.remove(start)
+                                    available.remove((start[0], start[1]+1))
+                                    return shiplocarray
+      else:
+                                    startav.remove(start)
+                                    return assignship(length, dir)
+
+def assignailoc():
+
+    cadirection = random.choice('dr')
+    badirection = random.choice('dr')
+    sudirection = random.choice('dr')
+    crdirection = random.choice('dr')
+    dedirection = random.choice('dr')
+
+    ca = assignship(5, cadirection)
+    ba = assignship(4, badirection)
+    su = assignship(3, sudirection)
+    cr = assignship(3, crdirection)
+    de = assignship(2, dedirection)
+
+    dict = {'Carrier':ca, 'Battleship':ba, 'Submarine':su, 'Cruiser':cr, 'Destroyer':de}
+    # print (dict)
+    return dict
+
+def fleet_to_array(fleet):
+    result = []
+    for v in fleet.values():
+        result.extend(v)
+    return result
 
 
 if __name__ == '__main__':

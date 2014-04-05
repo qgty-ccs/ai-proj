@@ -15,7 +15,7 @@ from pygame.locals import *
 from PAdLib import draw
 
 from battleship_ai import Map, Agent, Human, init_agent, init_human, array_to_arrangement
-from battleship_ai import TEST_ARRANGEMENT, TEST_FLEET
+from battleship_ai import TEST_ARRANGEMENT, TEST_FLEET, assignailoc, fleet_to_array
 
 # game constants
 FPS = 30
@@ -390,8 +390,9 @@ def draw_scoreboard(left, msgs):
 def game():
     global COUNTER, GAME_INFO
     human_turn = True
+    alloc = assignailoc()
     human = init_human(BOARDSIZE, array_to_arrangement(BOARD.grid), BOARD.fleet)
-    agent = init_agent(BOARDSIZE, TEST_ARRANGEMENT, TEST_FLEET)
+    agent = init_agent(BOARDSIZE, fleet_to_array(alloc), alloc)
     x = 0
     y = 0
 
