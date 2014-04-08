@@ -4,7 +4,8 @@ Team:           BigLeg
 Last Modified:  04/07/2014
 TODO:           1. Find bitmap for ships
                 2. Hit/Miss animation
-                3. Redesign scoreboard
+                3. Prevent player from clicking visited cells
+
 '''
 
 import copy
@@ -16,6 +17,7 @@ import pygame.gfxdraw
 from pygame.locals import *
 
 from PAdLib import draw as pagl_draw
+from pygbutton_src import pygbutton
 
 from battleship_ai import *
 from shared import Ship
@@ -31,6 +33,7 @@ MARGIN = 5
 HUMAN_EDGE = 450
 AI_EDGE = 495
 SCOREBOARD_EDGE = 470
+BOARD_LOWEREDGE = 450
 
 SHIP_LIST = [
     ('Carrier',      5),
@@ -430,6 +433,7 @@ class Game:
                 self.info = 'You won'
 
             self.draw_info(human.getstringifiedfleet(), agent.getstringifiedfleet(), human_turn)
+            self.finish()
             pygame.display.update()
 
             if human_turn:
@@ -499,22 +503,31 @@ class Game:
         draw_msg(self.surface, self.font, counter, (WINDOWWIDTH / 2 - 40, 470))
 
         # print game info
-        draw_msg(self.surface, self.font, self.info, (WINDOWWIDTH / 2 - 40, 500))
+        draw_msg(self.surface, self.font, self.info, (WINDOWWIDTH / 2 - 60, 520))
+
+    def finish(self):
+        # show reset button
+        words = self.font.render('Reset', True, WHITE)
+        rect = Rect(0, 0, 80, 20)
+        rect.topleft = (WINDOWWIDTH / 2 - 40, 500)
+        reset_btn = pygbutton.PygButton(rect, 'Reset')
+        reset_btn.draw(self.surface)
 
 ################################################################################
 
 def pos_to_coord((x,y)):
     ''' Convert a position on screen to grid coordinate.
     '''
-    if x <= HUMAN_EDGE:
-        x = x // (CELLSIZE + MARGIN)
-        y = y // (CELLSIZE + MARGIN)
-    elif x >= AI_EDGE:
-        x = (x - CELLSIZE) // (CELLSIZE + MARGIN)
-        y = y // (CELLSIZE + MARGIN)
-    else:
-        return None
-    return (x,y)
+    cx = 0
+    cy = 0
+    if MARGIN < y < BOARD_LOWEREDGE:
+        if MARGIN < x <= HUMAN_EDGE:
+            cx = x // (CELLSIZE + MARGIN)
+            cy = y // (CELLSIZE + MARGIN)
+        elif AI_EDGE <= x < WINDOWWIDTH - MARGIN:
+            cx = (x - CELLSIZE) // (CELLSIZE + MARGIN)
+            cy = y // (CELLSIZE + MARGIN)
+    return (cx,cy)
 
 
 def init_grid():
