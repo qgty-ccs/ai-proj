@@ -1,12 +1,16 @@
 '''
 CS 5100 Proj:   Battleship
 Team:           BigLeg
-Last Modified:  04/05/2014
+Last Modified:  04/08/2014
+TODO:           1. Fix AI bugs (Done)
+                2. Reset Button - Memory
+                3. Induction
 '''
 
 import copy
 import random
 from randomgen import assignailoc
+from shared import Ship
 
 MAPSIZE = 10
 HEALTH = 17
@@ -131,11 +135,7 @@ class Player:
 
     my_map = None
     enemy_map = None
-    fleet = {'Carrier': [],
-             'Battleship': [],
-             'Submarine': [],
-             'Cruiser': [],
-             'Destroyer': []}
+    fleet = []
 
     def __init__(self, **kwargs):
         for k, v in kwargs.iteritems():
@@ -162,12 +162,14 @@ class Player:
                 'sunk_ship': None}
 
     def update_fleet(self, (x,y)):
-        for k,ship in self.fleet.items():
-            if (x,y) in ship:
-                self.fleet[k].remove((x,y))
-                if not ship:
-                    del self.fleet[k]
-                    return k
+        for i in range(0, len(self.fleet)):
+            if (x,y) in self.fleet[i].coords:
+                self.fleet[i].coords.remove((x,y))
+                if not self.fleet[i].coords:
+                    # ship is destroyed, delete & return the name
+                    shipname = self.fleet[i].t
+                    del self.fleet[i]
+                    return shipname
         return None
 
     def lose(self):
@@ -175,29 +177,20 @@ class Player:
         '''
         return False if self.fleet else True
 
-    def gethealth(self):
-        result = 0
-        for v in self.fleet.values():
-            result = result + len(v)
-        return result
-
-    def getfleet(self):
-        result = []
-        for k, v in self.fleet.items():
-            string = k + ': 1'
-            result.append(string)
-        return result
+    def getstringifiedfleet(self):
+        return [s.t + ': 1' for s in self.fleet]
 
 
 class Agent(Player):
 
     # target mode parameters
 
-    # direction:
-    # -1 - up 
-    # 1 - down
-    # -2 - left 
-    # 2 - right
+    #   number  direction
+    #   -1      up 
+    #   1       down
+    #   -2      left 
+    #   2       right
+
     direction = None 
     candidates = [] # direction candidates
     wrong_direction = False
@@ -212,41 +205,46 @@ class Agent(Player):
     enemy_fleet = ['Carrier', 'Battleship', 'Submarine', 'Cruiser',
                     'Destroyer']
 
-    def arrangement(self):
-        '''
-        Generate a randomized sparse arrangement of fleet.
-        '''
-        return assignailoc() 
-
     def attack(self, enemy, (x,y)):
-        ''' Attack a coordinate in Hunt-and-Target mode.
+        ''' Attack an enemy coordinate.
         '''
         self.current = (x,y)
-        result = enemy.hit((x,y))
-        feedback = result['result']
-        sunk_ship = result['sunk_ship']
-        if feedback == HIT:
+        r = enemy.hit((x,y))
+        result, sunk_ship = r['result'], r['sunk_ship']
+        if result == HIT:
 
-            print 'hit'
+            print 'ai hit', (x,y)
+
             self.streak = self.streak + 1
 
             if self.hunt_mode:
-                # hunt mode - hit, enter target mode
+                # hunt mode & hit:
+                # enter target mode
                 self.hunt_mode = False
                 self.base = (x,y)
 
             elif sunk_ship:
+                # target mode & sunk ship:
                 # return to hunt mode
+                print 'ai sunk a', sunk_ship
                 self.enemy_fleet.remove(sunk_ship)
                 self.to_hunt_mode(sunk_ship)
 
             elif self.reached_edge():
+                # target mode, no sunk ship, reach edge
                 self.r_edge = True
 
+            else:
+                # target mode, no sunk ship, no reach edge
+                # continue
+                pass
+
         else:
-            print 'miss'
+
+            print 'ai miss', (x,y)
+
             if not self.hunt_mode:
-                # target mode - miss
+                # target mode & miss
                 if self.streak > 1:
                     # reach end
                     self.r_end = True
@@ -256,7 +254,7 @@ class Agent(Player):
 
         # mark coordinate as visited
         self.enemy_map.set((x,y), -1)
-        return result
+        return r
 
     def reached_edge(self):
         ''' Tell if the current direction reaches the map edge.
@@ -284,7 +282,7 @@ class Agent(Player):
     def hunt(self):
         ''' Hunt mode
         '''
-        print 'hunt'
+        print 'hunt mode'
         return self.choice(0)
 
     def target(self):
@@ -292,30 +290,31 @@ class Agent(Player):
         keep track of cell discovered, possible directions, remaining ships
         and find the best candidate to attack.
         '''
+        print 'target mode'
         m = self.enemy_map
         base = self.base
         next = None
 
         if self.direction is None:
-            # if direction is not determined yet
+            # if direction is not set yet, set direction
             next = self.set_direction()
-            print 'set direction to', self.direction
+            print 'no direction set: set direction to', self.direction
 
         elif self.wrong_direction:
-            print 'wrong direction'
+            # if direction is wrong, choose another
             next = self.choose_random_direction()
-            print 'set direction to', self.direction
+            print 'wrong direction: reset direction to', self.direction
             self.wrong_direction = False
 
         elif self.r_edge:
-            print 'reached the edge of map'
-            print self.current
+            # if reached edge, choose opposite direction
             next = self.opposite_direction()
             if not next:
                 # no sunken ship, reached edge, no opposite direction.
                 # TODO mark part of ships
                 next = self.to_hunt_mode(None)
             self.r_edge = False
+            print 'reached the edge of map: reset direction to', self.direction
 
         elif self.r_end:
             print 'reach end of a ship'
@@ -340,7 +339,7 @@ class Agent(Player):
     def opposite_direction(self):
         base = self.base
         chosen = None
-        self.direction = -self.direction
+        self.direction = - self.direction
         for c in self.candidates:
             if self.determine_direction(c, base) == self.direction:
                 chosen = c
@@ -457,22 +456,8 @@ class Agent(Player):
             return (x + 1, y)
         return None
 
-
-    def find_highest_priority(self):
-        ''' Find the maximum value of the map for agent
-        '''
-        size = self.enemy_map.size
-        m = self.enemy_map.m
-        result = 0
-        for i in range(0, size):
-            for j in range(0, size):
-               if m[i][j] > result:
-                   result = m[i][j]
-        return result
-
     def choice(self, highest):
         ''' Choose the coordinates of the target in the map for agent
-            This and find_highest_priority are used to help AI locate target
         '''
         size = self.enemy_map.size
         m = self.enemy_map.m
@@ -512,20 +497,19 @@ def init_agent(mapsize, arrangement, fleet):
     return Agent(my_map=my_map, enemy_map=enemy_map, fleet=fleet)
 
 
-def array_to_arrangement(array):
-    ''' Convert two-dimension array to arrangement.
-    '''
-    arrangement = []
+def grid_to_array(grid):
+    array = []
     for i in range(0, MAPSIZE):
         for j in range(0, MAPSIZE):
-            if array[i][j] == '1':
-                arrangement.append((i,j))
-    return arrangement
+            if grid[i][j] == '1':
+                array.append((i,j))
+    return array
 
 def fleet_to_array(fleet):
+    ''' Convert a list of ships into array.
+    '''
     result = []
-    for v in fleet.values():
-        result.extend(v)
+    [result.extend(s.coords) for s in fleet]
     return result
 
 

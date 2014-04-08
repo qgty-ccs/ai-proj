@@ -1,7 +1,10 @@
 '''
 CS 5100 Proj:   Battleship
 Team:           BigLeg
-Last Modified:  04/05/2014
+Last Modified:  04/07/2014
+TODO:           1. Find bitmap for ships
+                2. Hit/Miss animation
+                3. Redesign scoreboard
 '''
 
 import copy
@@ -14,9 +17,8 @@ from pygame.locals import *
 
 from PAdLib import draw as pagl_draw
 
-# from battleship_ai import Map, Agent, Human, init_agent, init_human, array_to_arrangement
-# from battleship_ai import TEST_ARRANGEMENT, TEST_FLEET, assignailoc, fleet_to_array
 from battleship_ai import *
+from shared import Ship
 
 ## game parameters
 
@@ -56,17 +58,17 @@ TUFTSBLUE = (67,  130, 205)
 
 ################################################################################
 
-class Ship:
+# class Ship:
 
-    coords = []
-    t = None
+#     coords = []
+#     t = None
 
-    def __init__(self, **kwargs):
-        for k, v in kwargs.iteritems():
-            setattr(self, k, v)
+#     def __init__(self, **kwargs):
+#         for k, v in kwargs.iteritems():
+#             setattr(self, k, v)
 
-    def length(self):
-        return len(self.coords)
+#     def length(self):
+#         return len(self.coords)
 
 ################################################################################
 
@@ -132,9 +134,9 @@ class Board:
                 g = grid[x][y]
 
                 if g == 'M':    # miss
-                    draw_miss((x,y), False)
+                    self.draw_miss(surface, (x,y), False)
                 elif g == 'H':  # hit
-                    draw_hit((x,y), False)
+                    self.draw_hit(surface, (x,y), False)
                 rect = [(MARGIN + CELLSIZE) * x + MARGIN + CELLSIZE,
                         (MARGIN + CELLSIZE) * y + MARGIN,
                         CELLSIZE,
@@ -168,7 +170,7 @@ class Board:
                     CELLSIZE]
             
         # pygame.draw.rect(surface, BLUE, rect)
-        pagl_draw.rrect(surface, BLUE, rect, 5)
+        pagl_draw.rrect(surface, TUFTSBLUE, rect, 5)
         # pygame.draw.rect(surface, WHITE, rect, 2)
         pagl_draw.rrect(surface, WHITE, rect, 5, 2)
         cy = (MARGIN + CELLSIZE) * y + MARGIN + CELLSIZE / 2
@@ -252,19 +254,6 @@ class Board:
         else:
             print 'add ship failed'
             return False
-
-# def shipmaker(x, y, length):
-#     ''' Create a horizontal arrangement of ship of given length.
-#     '''
-#     ship = [(x,y)]
-#     if x <= BOARDSIZE - length:
-#         # place horizontally
-#         for i in range(x, x + length):
-#             ship.append((i,y))
-#     else:
-#         # not enough space, stick to right edge
-#         for i in range(BOARDSIZE - length, BOARDSIZE):
-#             ship.append((i,y))
 
 ################################################################################
 
@@ -428,7 +417,7 @@ class Game:
     def game(self):
         human_turn = True
         alloc = assignailoc()
-        human = init_human(BOARDSIZE, array_to_arrangement(self.board.grid), self.board.fleet)
+        human = init_human(BOARDSIZE, grid_to_array(self.board.grid), self.board.fleet)
         agent = init_agent(BOARDSIZE, fleet_to_array(alloc), alloc)
         x = 0
         y = 0
@@ -440,7 +429,7 @@ class Game:
             if agent.lose():
                 self.info = 'You won'
 
-            self.draw_info(human.getfleet(), agent.getfleet(), human_turn)
+            self.draw_info(human.getstringifiedfleet(), agent.getstringifiedfleet(), human_turn)
             pygame.display.update()
 
             if human_turn:
@@ -481,7 +470,7 @@ class Game:
                 if sunk_ship:
                         self.info = 'Your ' + sunk_ship + ' was destroyed!'
 
-                self.counter = counter + 1
+                self.counter = self.counter + 1
 
                 self.board.draw(self.surface)
                 pygame.display.update()
@@ -496,10 +485,10 @@ class Game:
         self.scoreboard.reset(self.surface)
 
         # print human fleet
-        # draw_scoreboard(2*MARGIN, human_fleet)
+        draw_msglist(self.surface, self.font, 2*MARGIN, human_fleet)
 
         # print ai fleet
-        # draw_scoreboard(WINDOWWIDTH - 105, ai_fleet)
+        draw_msglist(self.surface, self.font, WINDOWWIDTH - 105, ai_fleet)
 
         # print turn indicator
         turn = 'Your Turn' if human_turn else 'AI Turn'
@@ -563,9 +552,12 @@ def reset():
     # TODO
     pass
 
-def draw_scoreboard():
+def draw_msglist(surface, font, left, msgs):
     # TODO
-    pass
+    base = SCOREBOARD_EDGE + 10
+    for msg in msgs:
+        base = base + 16
+        draw_msg(surface, font, msg, (left, base))
 
 ################################################################################
 
