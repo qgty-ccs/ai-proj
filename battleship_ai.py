@@ -2,7 +2,7 @@
 CS 5100 Proj:   Battleship
 Team:           BigLeg
 Last Modified:  04/08/2014
-TODO:           1. Fix AI bugs (Done)
+TODO:           1. Fix AI bugs in opposite_direction
                 2. Reset Button - Memory
                 3. Induction
 '''
@@ -337,6 +337,7 @@ class Agent(Player):
         return next
 
     def opposite_direction(self):
+        # TODO find bug
         base = self.base
         chosen = None
         self.direction = - self.direction
@@ -365,10 +366,12 @@ class Agent(Player):
         ''' choose a random direction from candidates.
         '''
         base = self.base
-        chosen = random.choice(self.candidates)
-        self.candidates.remove(chosen)
-        self.direction = self.determine_direction(chosen, base)
-        return chosen
+        if self.candidates:
+            chosen = random.choice(self.candidates)
+            self.candidates.remove(chosen)
+            self.direction = self.determine_direction(chosen, base)
+            return chosen
+        return (0,0)
 
     def to_hunt_mode(self, ship):
         ''' Return to hunt mode
@@ -466,7 +469,15 @@ class Agent(Player):
           for j in range(0, size):
              if m[i][j] == highest:
                  candidates.append((i,j))
-        return random.choice(candidates)
+        if candidates:
+            return random.choice(candidates)
+        else:
+            return (0,0)
+
+    def reset(self):
+        ''' Store player's game habits, then reset all in-game values.
+        '''
+        pass
 
 
 class Human(Player):
@@ -476,6 +487,12 @@ class Human(Player):
         '''
         return False if self.enemy_map.get((x,y)) == UNEXPLORED else True
 
+    def reset(self):
+        ''' Store player's game habits, then reset all in-game values.
+        '''
+        pass
+
+################################################################################
 
 def init_human(mapsize, arrangement, fleet):
     ''' Init human object.

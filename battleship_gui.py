@@ -43,6 +43,14 @@ SHIP_LIST = [
     ('Destroyer',    2)
 ]
 
+SHIP_LIST_BACKUP = [
+    ('Carrier',      5),
+    ('Battleship',   4),
+    ('Submarine',    3),
+    ('Cruiser',      3),
+    ('Destroyer',    2)
+]
+
 
 ##           define colors
 #             R    G    B
@@ -290,8 +298,10 @@ class Game:
 
     board = None
     scoreboard = None
-    # ai = None
-    # human = None
+
+    agent = None
+    human = None
+
     surface = None
     font = None
     info = ''
@@ -420,21 +430,26 @@ class Game:
     def game(self):
         human_turn = True
         alloc = assignailoc()
-        human = init_human(BOARDSIZE, grid_to_array(self.board.grid), self.board.fleet)
-        agent = init_agent(BOARDSIZE, fleet_to_array(alloc), alloc)
+        self.human = init_human(BOARDSIZE, grid_to_array(self.board.grid), self.board.fleet)
+        self.agent = init_agent(BOARDSIZE, fleet_to_array(alloc), alloc)
         x = 0
         y = 0
+        finished = False
 
         while True:
             # determine if anyone won
-            if human.lose():
+            if self.human.lose():
                 self.info = 'AI won'
-            if agent.lose():
+                finished = True
+            if self.agent.lose():
                 self.info = 'You won'
+                finished = True
 
-            self.draw_info(human.getstringifiedfleet(), agent.getstringifiedfleet(), human_turn)
-            self.finish()
+            self.draw_info(self.human.getstringifiedfleet(), self.agent.getstringifiedfleet(), human_turn)
             pygame.display.update()
+
+            if finished:
+                break
 
             if human_turn:
 
@@ -445,7 +460,7 @@ class Game:
                         x,y = pos_to_coord(event.pos)
 
                 if x >= BOARDSIZE:
-                    resp = human.attack(agent, (x - BOARDSIZE,y))
+                    resp = self.human.attack(self.agent, (x - BOARDSIZE,y))
                     result, sunk_ship = resp['result'], resp['sunk_ship']
                     self.board.grid[x][y] = result
 
@@ -463,8 +478,8 @@ class Game:
                     x = 0
                     y = 0
             else:
-                x, y = agent.find_target()
-                resp = agent.attack(human, (x, y))
+                x, y = self.agent.find_target()
+                resp = self.agent.attack(self.human, (x, y))
                 result, sunk_ship = resp['result'], resp['sunk_ship']
                 self.board.grid[x][y] = result
 
@@ -483,6 +498,9 @@ class Game:
                 y = 0
 
             # FPSCLOCK.tick(FPS)
+        # reset game
+        self.finish()
+
 
     def draw_info(self, human_fleet, ai_fleet, human_turn):
         # erase previous msgs
@@ -507,11 +525,36 @@ class Game:
 
     def finish(self):
         # show reset button
+        print 'finish called'
         words = self.font.render('Reset', True, WHITE)
         rect = Rect(0, 0, 80, 20)
         rect.topleft = (WINDOWWIDTH / 2 - 40, 500)
         reset_btn = pygbutton.PygButton(rect, 'Reset')
         reset_btn.draw(self.surface)
+        pygame.display.update()
+        self.reset(reset_btn)
+
+    def reset(self, reset_btn):
+        print 'reset called'
+        while True:
+            for event in pygame.event.get():
+                if termination_detected(event):
+                    terminate()
+
+                elif 'click' in reset_btn.handleEvent(event):
+                    self.human.reset()
+                    self.agent.reset()
+                    print 'game entities are reset'
+                    break
+            break
+
+        self.reset_ingame_values()
+        self.run()
+
+    def reset_ingame_values(self):
+        global SHIP_LIST, SHIP_LIST_BACKUP
+        SHIP_LIST = copy.deepcopy(SHIP_LIST_BACKUP)
+        print 'ingame values are reset'
 
 ################################################################################
 
@@ -560,10 +603,6 @@ def termination_detected(event):
 def terminate():
     pygame.quit()
     sys.exit(0)
-
-def reset():
-    # TODO
-    pass
 
 def draw_msglist(surface, font, left, msgs):
     # TODO
