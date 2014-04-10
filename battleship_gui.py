@@ -59,6 +59,8 @@ SHIP_LIST_BACKUP = [
     ('Destroyer',    2)
 ]
 
+BULLET_HOLE_PATH = './img/bullet_hole_40x40.gif'
+BGIMAGE_PATH = './img/water_945x600.jpg'
 
 ##           define colors
 #             R    G    B
@@ -75,19 +77,7 @@ YALEBLUE  = ( 9,   70, 145)
 BABYBLUE  = (139, 205, 241)
 TUFTSBLUE = (67,  130, 205)
 
-################################################################################
-
-# class Ship:
-
-#     coords = []
-#     t = None
-
-#     def __init__(self, **kwargs):
-#         for k, v in kwargs.iteritems():
-#             setattr(self, k, v)
-
-#     def length(self):
-#         return len(self.coords)
+BGI = pygame.image.load(BGIMAGE_PATH)
 
 ################################################################################
 
@@ -116,6 +106,7 @@ class Board:
     def draw(self, surface):
         ''' Draw the current ship layout info onto surface.
         '''
+        surface.blit(BGI, (0,0))
         grid = self.grid
         # draw grid
         self.draw_grid(surface)
@@ -174,7 +165,14 @@ class Board:
         x = (MARGIN + CELLSIZE) * x + MARGIN + CELLSIZE / 2 + delta
         y = (MARGIN + CELLSIZE) * y + MARGIN + CELLSIZE / 2
         # self.draw_occupied(surface, (x,y))
-        pygame.draw.circle(surface, BLACK, (x, y), 10)
+        # pygame.draw.circle(surface, BLACK, (x, y), 10)
+        self.draw_bullet_hole(surface, (x,y))
+
+    def draw_bullet_hole(self, surface, (x,y)):
+        img = pygame.image.load(BULLET_HOLE_PATH)
+        rect = img.get_rect()
+        rect.center = (x,y)
+        surface.blit(img, rect)
 
     def draw_miss(self, surface, (x,y), rect, delta):                
         pagl_draw.rrect(surface, TUFTSBLUE, rect, 5)
@@ -285,7 +283,6 @@ class Scoreboard:
         # erase all previous messages
         rect = pygame.Rect(MARGIN, SCOREBOARD_EDGE, WINDOWWIDTH - 2 * MARGIN, 120)
         surface.fill(YALEBLUE, rect)
-        # pygame.draw.rect(surface, WHITE, rect, 2)
         pagl_draw.rrect(surface, WHITE, rect, 10, 2)
 
     def draw_arrangement_info(self, surface):
