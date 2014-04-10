@@ -1,8 +1,8 @@
 '''
 CS 5100 Proj:   Battleship
 Team:           BigLeg
-Last Modified:  04/08/2014
-TODO:           1. Fix AI bugs in opposite_direction
+Last Modified:  04/10/2014
+TODO:           1. Fix AI bugs in opposite_direction (checked)
                 2. Reset Button - Memory
                 3. Induction
 '''
@@ -215,6 +215,9 @@ class Agent(Player):
 
             print 'ai hit', (x,y)
 
+            # improve the priority of unvisited adjacent squares of (x,y)
+            self.improve_neighbor_priority((x,y))
+
             self.streak = self.streak + 1
 
             if self.hunt_mode:
@@ -253,7 +256,7 @@ class Agent(Player):
                     self.wrong_direction = True
 
         # mark coordinate as visited
-        self.enemy_map.set((x,y), -1)
+        self.enemy_map.set((x,y), -2)
         return r
 
     def reached_edge(self):
@@ -283,7 +286,8 @@ class Agent(Player):
         ''' Hunt mode
         '''
         print 'hunt mode'
-        return self.choice(0)
+        # return self.choice(0)
+        return self.choose_highest()
 
     def target(self):
         '''
@@ -298,11 +302,15 @@ class Agent(Player):
         if self.direction is None:
             # if direction is not set yet, set direction
             next = self.set_direction()
+            if not next:
+                next = self.hunt_mode(None)
             print 'no direction set: set direction to', self.direction
 
         elif self.wrong_direction:
             # if direction is wrong, choose another
             next = self.choose_random_direction()
+            if not next:
+                next = self.to_hunt_mode(None)
             print 'wrong direction: reset direction to', self.direction
             self.wrong_direction = False
 
@@ -311,7 +319,6 @@ class Agent(Player):
             next = self.opposite_direction()
             if not next:
                 # no sunken ship, reached edge, no opposite direction.
-                # TODO mark part of ships
                 next = self.to_hunt_mode(None)
             self.r_edge = False
             print 'reached the edge of map: reset direction to', self.direction
@@ -321,7 +328,6 @@ class Agent(Player):
             next = self.opposite_direction()
             if not next:
                 # no sunken ship, reached end, no opposite direction.
-                # TODO mark part of ships
                 next = self.to_hunt_mode(None)
             self.r_end = False
 
@@ -330,9 +336,9 @@ class Agent(Player):
             next = self.moveon()
             print 'move on direction', self.direction
             # remove all candidates except the opposite
-            for c in self.candidates:
-                if self.determine_direction(c, base) != -self.direction:
-                    self.candidates.remove(c)
+            # for c in self.candidates:
+            #     if self.determine_direction(c, base) != -self.direction:
+            #         self.candidates.remove(c)
 
         return next
 
@@ -341,10 +347,12 @@ class Agent(Player):
         base = self.base
         chosen = None
         self.direction = - self.direction
+        print 'candidates:', self.candidates
         for c in self.candidates:
             if self.determine_direction(c, base) == self.direction:
-                chosen = c
+                chosen = copy.deepcopy(c)
                 self.candidates.remove(c)
+        print 'opposite:', chosen
         return chosen
 
     def set_direction(self):
@@ -353,25 +361,40 @@ class Agent(Player):
 
         # find undiscovered spaces around the base.
         adjacent = m.find_adjacent_by_xy(base)
-        undiscovered_adjacent = [a for a in adjacent if m.get(a) > -1]
-
+        print 'adjacent:', adjacent
+        undiscovered_adjacent = [a for a in adjacent if m.get(a) > -2]
+        print 'undiscovered adjacent:', undiscovered_adjacent
         # find all feasible directions.
-        self.candidates = [u for u in undiscovered_adjacent \
-            if self.evaluate_direction(u, base)]
-        
+        self.candidates = undiscovered_adjacent
+
+        # [u for u in undiscovered_adjacent \
+        #     if self.evaluate_direction(u, base)]
+        print 'self candidates:', self.candidates
+
         # choose one as next direction randomly.
         return self.choose_random_direction()
+
+    def improve_neighbor_priority(self, (x,y)):
+        # find undiscovered spaces around the base.
+        m = self.enemy_map
+        adjacent = m.find_adjacent_by_xy((x,y))
+        # print 'adjacent:', adjacent
+        for (ux, uy) in [a for a in adjacent if m.get(a) > -2]:
+            self.enemy_map.m[ux][uy] = self.enemy_map.m[ux][uy] + 1
+        # print 'undiscovered adjacent:', undiscovered_adjacent
+
 
     def choose_random_direction(self):
         ''' choose a random direction from candidates.
         '''
         base = self.base
+        print 'candidates - ', self.candidates
         if self.candidates:
             chosen = random.choice(self.candidates)
             self.candidates.remove(chosen)
             self.direction = self.determine_direction(chosen, base)
             return chosen
-        return (0,0)
+        return None
 
     def to_hunt_mode(self, ship):
         ''' Return to hunt mode
@@ -404,45 +427,45 @@ class Agent(Player):
             return 2
         return None
 
-    def evaluate_direction(self, (x,y), base):
-        ''' Tell if the given direction is applicable.
-        '''
-        bx, by = base
-        direction = self.determine_direction((x,y), base)
-        for ship in self.enemy_fleet:
-            valid = self.have_continous_cells(direction, base, FLEET_HEALTH[ship], MAPSIZE)
-            if valid:
-                return True
-        return False
+    # def evaluate_direction(self, (x,y), base):
+    #     ''' Tell if the given direction is applicable.
+    #     '''
+    #     bx, by = base
+    #     direction = self.determine_direction((x,y), base)
+    #     for ship in self.enemy_fleet:
+    #         valid = self.have_continous_cells(direction, base, FLEET_HEALTH[ship], MAPSIZE)
+    #         if valid:
+    #             return True
+    #     return False
 
-    def have_continous_cells(self, direction, base, length, size):
-        ''' Tell if a direction has <length> continous undiscovered cells
-            in a row starting from base.
-        '''
-        bx, by = base
-        m = self.enemy_map
-        if direction == -1:
-            if by > length - 2:
-                discovered = [i for i in range(by + 1 - length, by) if m.get((bx,i)) == -1]
-                if not discovered:
-                    return True
-        elif direction == 1:
-            if by < size - length + 1:
-                discovered = [i for i in range(by + 1, by + length) if m.get((bx,i)) == -1]
-                if not discovered:
-                    return True
-        elif direction == -2:
-            if bx > length - 2:
-                discovered = [i for i in range(bx + 1 - length, bx) if m.get((i,by)) == -1]
-                if not discovered:
-                    return True
-        elif direction == 2:
-            if bx < size - length + 1:
-                discovered = [i for i in range(bx + 1, bx + length) if m.get((i,by)) == -1]
-                if not discovered:
-                    return True
+    # def have_continous_cells(self, direction, base, length, size):
+    #     ''' Tell if a direction has <length> continous undiscovered cells
+    #         in a row starting from base.
+    #     '''
+    #     bx, by = base
+    #     m = self.enemy_map
+    #     if direction == -1:
+    #         if by > length - 2:
+    #             discovered = [i for i in range(by + 1 - length, by) if m.get((bx,i)) == -1]
+    #             if not discovered:
+    #                 return True
+    #     elif direction == 1:
+    #         if by < size - length + 1:
+    #             discovered = [i for i in range(by + 1, by + length) if m.get((bx,i)) == -1]
+    #             if not discovered:
+    #                 return True
+    #     elif direction == -2:
+    #         if bx > length - 2:
+    #             discovered = [i for i in range(bx + 1 - length, bx) if m.get((i,by)) == -1]
+    #             if not discovered:
+    #                 return True
+    #     elif direction == 2:
+    #         if bx < size - length + 1:
+    #             discovered = [i for i in range(bx + 1, bx + length) if m.get((i,by)) == -1]
+    #             if not discovered:
+    #                 return True
 
-        return False
+    #     return False
 
     def moveon(self):
         ''' Continue moving to current direction.
@@ -459,20 +482,41 @@ class Agent(Player):
             return (x + 1, y)
         return None
 
-    def choice(self, highest):
-        ''' Choose the coordinates of the target in the map for agent
+    # def choice(self, highest):
+    #     ''' Choose the coordinates of the target in the map for agent
+    #     '''
+    #     size = self.enemy_map.size
+    #     m = self.enemy_map.m
+    #     candidates = []
+    #     for i in range(0, size):
+    #       for j in range(0, size):
+    #          if m[i][j] == highest:
+    #              candidates.append((i,j))
+    #     if candidates:
+    #         return random.choice(candidates)
+    #     else:
+    #         print 'candidates:', candidates
+    #         return (0,0)
+
+    def choose_highest(self):
+        ''' Choose the coordinates of the target in the map with highest
+            weightage val
         '''
         size = self.enemy_map.size
         m = self.enemy_map.m
-        candidates = []
+        highest = m[0][0]
+        candidates = [(0,0)]
+
         for i in range(0, size):
           for j in range(0, size):
              if m[i][j] == highest:
-                 candidates.append((i,j))
-        if candidates:
-            return random.choice(candidates)
-        else:
-            return (0,0)
+                candidates.append((i,j))
+             elif m[i][j] > highest:
+                highest = m[i][j]
+                candidates = [(i,j)]
+
+        return random.choice(candidates)
+
 
     def reset(self):
         ''' Store player's game habits, then reset all in-game values.

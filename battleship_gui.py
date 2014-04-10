@@ -536,7 +536,10 @@ class Game:
 
     def reset(self, reset_btn):
         print 'reset called'
+        reset_clicked = False
         while True:
+            if reset_clicked:
+                break
             for event in pygame.event.get():
                 if termination_detected(event):
                     terminate()
@@ -545,8 +548,8 @@ class Game:
                     self.human.reset()
                     self.agent.reset()
                     print 'game entities are reset'
+                    reset_clicked = True
                     break
-            break
 
         self.reset_ingame_values()
         self.run()
