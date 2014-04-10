@@ -4,7 +4,7 @@ Team:           BigLeg
 Last Modified:  04/10/2014
 TODO:           1. Fix AI bugs in opposite_direction (checked)
                 2. Reset Button - Memory
-                3. Induction
+                3. Induction (gave up)
 '''
 
 import copy
@@ -556,22 +556,6 @@ def init_agent(mapsize, arrangement, fleet):
     enemy_map = Map(size=mapsize)
     enemy_map.generate_ai_enemy_map()
     return Agent(my_map=my_map, enemy_map=enemy_map, fleet=fleet)
-
-
-def grid_to_array(grid):
-    array = []
-    for i in range(0, MAPSIZE):
-        for j in range(0, MAPSIZE):
-            if grid[i][j] == '1':
-                array.append((i,j))
-    return array
-
-def fleet_to_array(fleet):
-    ''' Convert a list of ships into array.
-    '''
-    result = []
-    [result.extend(s.coords) for s in fleet]
-    return result
 
 
 if __name__ == '__main__':

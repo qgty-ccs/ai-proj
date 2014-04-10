@@ -20,7 +20,7 @@ from PAdLib import draw as pagl_draw
 from pygbutton_src import pygbutton
 
 from battleship_ai import *
-from shared import Ship
+from shared import *
 
 ## game parameters
 
@@ -34,6 +34,14 @@ HUMAN_EDGE = 450
 AI_EDGE = 495
 SCOREBOARD_EDGE = 470
 BOARD_LOWEREDGE = 450
+
+SHIP_IMGS = {
+    'Carrier':      './img/carrier_220x40.png',
+    'Battleship':   './img/battleship_175x40.png',
+    'Submarine':    './img/submarine_130x40.png',
+    'Cruiser':      './img/cruiser_130x40.png',
+    'Destroyer':    './img/destroyer_85x40.png'
+}
 
 SHIP_LIST = [
     ('Carrier',      5),
@@ -56,7 +64,7 @@ SHIP_LIST_BACKUP = [
 #             R    G    B
 WHITE     = (255, 255, 255)
 BLACK     = ( 0,   0,   0)
-RED       = (128, 128,  128)
+GRAY      = (128, 128,  128)
 BLUE      = ( 0,   0,  255)
 DARKGREEN = ( 0,  155,  0)
 GREEN     = ( 0,  255,  0)
@@ -109,86 +117,70 @@ class Board:
         ''' Draw the current ship layout info onto surface.
         '''
         grid = self.grid
-        # draw left side
-        for x in range(BOARDSIZE):
-            for y in range(BOARDSIZE):
+        # draw grid
+        self.draw_grid(surface)
+        # draw ships
+        for ship in self.fleet:
+            self.draw_ship(surface, ship)
+        # draw cells
+        self.draw_cells(surface)
 
+    def draw_grid(self, surface):
+        grid = self.grid
+        delta = 0
+
+        for x in range(2 * BOARDSIZE):
+            delta = CELLSIZE if BOARDSIZE <= x < 2 * BOARDSIZE else 0
+            for y in range(BOARDSIZE):
+                rect = [(MARGIN + CELLSIZE) * x + MARGIN + delta,
+                        (MARGIN + CELLSIZE) * y + MARGIN,
+                        CELLSIZE,
+                        CELLSIZE]
+                pagl_draw.rrect(surface, WHITE, rect, 5, 2)
+
+    def draw_cells(self, surface):
+        grid = self.grid
+        delta = 0
+
+        # draw left side
+        for x in range(2 * BOARDSIZE):
+            delta = CELLSIZE if BOARDSIZE <= x < 2 * BOARDSIZE else 0
+            for y in range(BOARDSIZE):
                 color = WHITE
                 filled = False
                 g = grid[x][y]
 
+                rect = [(MARGIN + CELLSIZE) * x + MARGIN + delta,
+                        (MARGIN + CELLSIZE) * y + MARGIN,
+                        CELLSIZE,
+                        CELLSIZE]
+
                 if g == 'C':    # candidate
                     color = GREEN
                     filled = True
-                elif g == '1':  # selected
-                    color = RED
-                    filled = True
+                # elif g == '1':  # selected
+                #     color = GRAY
+                #     filled = True
                 elif g == 'M':  # miss
-                    self.draw_miss(surface, (x,y), True)
+                    self.draw_miss(surface, (x,y), rect, delta)
                 elif g == 'H':  # hit
-                    self.draw_hit(surface, (x,y), True)
+                    self.draw_hit(surface, (x,y), delta)
 
-                rect = [(MARGIN + CELLSIZE) * x + MARGIN,
-                        (MARGIN + CELLSIZE) * y + MARGIN,
-                        CELLSIZE,
-                        CELLSIZE]
                 if filled:
-                    # pygame.draw.rect(surface, color, rect)
                     pagl_draw.rrect(surface, color, rect, 5)
-                # pygame.draw.rect(surface, WHITE, rect, 2)
-                pagl_draw.rrect(surface, WHITE, rect, 5, 2)
 
-        # draw right side
-        for x in range(BOARDSIZE, 2 * BOARDSIZE):
-            for y in range(BOARDSIZE):
 
-                g = grid[x][y]
-
-                if g == 'M':    # miss
-                    self.draw_miss(surface, (x,y), False)
-                elif g == 'H':  # hit
-                    self.draw_hit(surface, (x,y), False)
-                rect = [(MARGIN + CELLSIZE) * x + MARGIN + CELLSIZE,
-                        (MARGIN + CELLSIZE) * y + MARGIN,
-                        CELLSIZE,
-                        CELLSIZE]
-                # pygame.draw.rect(surface, WHITE, rect, 2)
-                pagl_draw.rrect(surface, WHITE, rect, 5, 2)
-
-    def draw_hit(self, surface, (x,y), human):
+    def draw_hit(self, surface, (x,y), delta):
+        x = (MARGIN + CELLSIZE) * x + MARGIN + CELLSIZE / 2 + delta
         y = (MARGIN + CELLSIZE) * y + MARGIN + CELLSIZE / 2
-        if human:
-            # left side
-            x = (MARGIN + CELLSIZE) * x + MARGIN + CELLSIZE / 2
-        else:
-            # right side
-            x = (MARGIN + CELLSIZE) * x + MARGIN + 3 * CELLSIZE / 2
-        self.draw_occupied(surface, (x,y))
+        # self.draw_occupied(surface, (x,y))
         pygame.draw.circle(surface, BLACK, (x, y), 10)
 
-    def draw_miss(self, surface, (x,y), human):    
-        if human:
-            # left side
-            rect = [(MARGIN + CELLSIZE) * x + MARGIN,
-                    (MARGIN + CELLSIZE) * y + MARGIN,
-                    CELLSIZE,
-                    CELLSIZE]
-        else:
-            # right side
-            rect = [(MARGIN + CELLSIZE) * x + MARGIN + CELLSIZE,
-                    (MARGIN + CELLSIZE) * y + MARGIN,
-                    CELLSIZE,
-                    CELLSIZE]
-            
-        # pygame.draw.rect(surface, BLUE, rect)
+    def draw_miss(self, surface, (x,y), rect, delta):                
         pagl_draw.rrect(surface, TUFTSBLUE, rect, 5)
-        # pygame.draw.rect(surface, WHITE, rect, 2)
         pagl_draw.rrect(surface, WHITE, rect, 5, 2)
+        cx = (MARGIN + CELLSIZE) * x + MARGIN + CELLSIZE / 2 + delta
         cy = (MARGIN + CELLSIZE) * y + MARGIN + CELLSIZE / 2
-        if human:
-            cx = (MARGIN + CELLSIZE) * x + MARGIN + CELLSIZE / 2
-        else:
-            cx = (MARGIN + CELLSIZE) * x + MARGIN + 3 * CELLSIZE / 2
 
         pygame.draw.circle(surface, WHITE, (cx,cy), 20, 2)
         pygame.draw.circle(surface, WHITE, (cx,cy), 15, 2)
@@ -197,10 +189,22 @@ class Board:
 
     def draw_occupied(self, surface, (x,y)):
         rect = [x-CELLSIZE/2, y-CELLSIZE/2, CELLSIZE, CELLSIZE]
-        # pygame.draw.rect(surface, RED, rect)
-        pagl_draw.rrect(surface, RED, rect, 5)
-        # pygame.draw.rect(surface, WHITE, rect, 2)
+        pagl_draw.rrect(surface, GRAY, rect, 5)
         pagl_draw.rrect(surface, WHITE, rect, 5, 2)
+
+    def draw_ship(self, surface, ship):
+        # find the start coordinate
+        head = ship.find_head()
+        x, y = coord_to_pos(head)
+        x = x - CELLSIZE / 2
+        y = y - CELLSIZE / 2
+        img = pygame.image.load(SHIP_IMGS[ship.t])
+        if not ship.horizontal:
+            # rotate
+            img = pygame.transform.rotate(img, 90)
+        rect = img.get_rect()
+        rect.topleft = (x,y)
+        surface.blit(img, rect)
 
     def clear_candidates(self):
         ''' Reset candidates to empy cells.
@@ -247,7 +251,7 @@ class Board:
         # pygame.display.update()
         # FPSCLOCK.tick(FPS)
 
-    def place_ship(self, (x,y), shipname):
+    def place_ship(self, (x,y), horizontal, shipname):
         ''' Add a ship to map.
         '''
         # look for candidates.
@@ -258,7 +262,7 @@ class Board:
                     self.grid[x][y] = '1'
                     coords.add((x,y))
         if coords:
-            ship = Ship(coords=coords, t=shipname)
+            ship = Ship(coords=coords, t=shipname, horizontal=horizontal)
             self.fleet.append(ship)
             print 'ship added', ship.__dict__
             return True
@@ -403,21 +407,24 @@ class Game:
                         horizontal = not horizontal
                         self.board.clear_candidates()
                         if in_player_map(pos):
-                            coord = pos_to_coord(pos)
-                            self.board.add_candidate(self.surface, coord, horizontal, shipname)
+                            self.board.add_candidate(self.surface, 
+                                                    pos_to_coord(pos), 
+                                                    horizontal, 
+                                                    shipname)
 
                 elif event.type == MOUSEMOTION:
                     self.board.clear_candidates()
                     pos = event.pos
                     if in_player_map(pos):
-                        coord = pos_to_coord(pos)
-                        self.board.add_candidate(self.surface, coord, horizontal, shipname)
+                        self.board.add_candidate(self.surface, 
+                                                pos_to_coord(pos), 
+                                                horizontal, 
+                                                shipname)
 
                 elif event.type == MOUSEBUTTONDOWN:
                     pos = event.pos
                     if in_player_map(pos):
-                        coord = pos_to_coord(pos)
-                        if self.board.place_ship(coord, shipname):
+                        if self.board.place_ship(pos_to_coord(pos), horizontal, shipname):
                             del SHIP_LIST[0]
 
             self.surface.fill(YALEBLUE)
@@ -568,12 +575,29 @@ def pos_to_coord((x,y)):
     cy = 0
     if MARGIN < y < BOARD_LOWEREDGE:
         if MARGIN < x <= HUMAN_EDGE:
+            # left side
             cx = x // (CELLSIZE + MARGIN)
             cy = y // (CELLSIZE + MARGIN)
         elif AI_EDGE <= x < WINDOWWIDTH - MARGIN:
+            # right side
             cx = (x - CELLSIZE) // (CELLSIZE + MARGIN)
             cy = y // (CELLSIZE + MARGIN)
     return (cx,cy)
+
+def coord_to_pos((x,y)):
+    ''' Convert a grid coordinate to a position on screen.
+    '''
+    px = 0
+    py = 0
+    if 0 <= x < 2 * BOARDSIZE:
+        py = (y + 1) * (CELLSIZE + MARGIN) - CELLSIZE / 2
+        if x < BOARDSIZE:
+            # left side
+            px = (x + 1) * (CELLSIZE + MARGIN) - CELLSIZE / 2
+        else:
+            # right side
+            px = (x + 2) * (CELLSIZE + MARGIN) - CELLSIZE / 2
+    return (px,py)
 
 
 def init_grid():
