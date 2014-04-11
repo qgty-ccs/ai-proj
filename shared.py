@@ -7,6 +7,14 @@ MISS = 'M'
 ENEMY_FLEET = ['Carrier', 'Battleship', 'Submarine', 'Cruiser',
                 'Destroyer']
 
+SHIP_HEALTH = {
+    'Carrier':      5,
+    'Battleship':   4,
+    'Submarine':    3,
+    'Cruiser':      3,
+    'Destroyer':    2
+    }
+
 class Map:
 
     m = None

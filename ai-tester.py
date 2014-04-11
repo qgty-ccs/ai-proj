@@ -92,7 +92,11 @@ def init_ai(ai_class):
     enemy_map = Map(size=MAPSIZE)
     enemy_map.generate_ai_enemy_map()
 
-    return ai_class(my_map=my_map, enemy_map=enemy_map, fleet=fleet, enemy_fleet=copy.deepcopy(ENEMY_FLEET))
+    return ai_class(my_map=my_map, 
+        enemy_map=enemy_map, 
+        fleet=fleet, 
+        enemy_fleet=copy.deepcopy(ENEMY_FLEET),
+        target_cache=[])
 
 if __name__ == '__main__':
     # read args

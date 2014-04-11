@@ -201,8 +201,7 @@ class Agent(Player):
     sunk_ship = None
 
     hunt_mode = True
-    enemy_fleet = ['Carrier', 'Battleship', 'Submarine', 'Cruiser',
-                    'Destroyer']
+    enemy_fleet = []
 
     def __init__(self, **kwargs):
         for k, v in kwargs.iteritems():
