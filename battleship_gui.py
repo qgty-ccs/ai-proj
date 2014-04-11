@@ -78,6 +78,9 @@ BABYBLUE  = (139, 205, 241)
 TUFTSBLUE = (67,  130, 205)
 
 BGI = pygame.image.load(BGIMAGE_PATH)
+HIT_SOUND_PATH = './sound/hit.wav'
+MISS_SOUND_PATH = './sound/miss.wav'
+ARR_SOUND_PATH = './sound/arr.wav'
 
 ################################################################################
 
@@ -175,14 +178,13 @@ class Board:
         surface.blit(img, rect)
 
     def draw_miss(self, surface, (x,y), rect, delta):                
-        pagl_draw.rrect(surface, TUFTSBLUE, rect, 5)
+        # pagl_draw.rrect(surface, TUFTSBLUE, rect, 5)
         pagl_draw.rrect(surface, WHITE, rect, 5, 2)
         cx = (MARGIN + CELLSIZE) * x + MARGIN + CELLSIZE / 2 + delta
         cy = (MARGIN + CELLSIZE) * y + MARGIN + CELLSIZE / 2
 
-        pygame.draw.circle(surface, WHITE, (cx,cy), 20, 2)
-        pygame.draw.circle(surface, WHITE, (cx,cy), 15, 2)
-        pygame.draw.circle(surface, WHITE, (cx,cy), 10, 2)
+        pygame.draw.circle(surface, WHITE, (cx,cy), 19, 2)
+        pygame.draw.circle(surface, WHITE, (cx,cy), 12, 2)
         pygame.draw.circle(surface, WHITE, (cx,cy), 5, 2)
 
     def draw_occupied(self, surface, (x,y)):
@@ -323,6 +325,7 @@ class Game:
         global FPSCLOCK
         # init pygame values/components.
         pygame.init()
+        pygame.mixer.init()
         FPSCLOCK = pygame.time.Clock()
         self.surface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
         self.font = pygame.font.Font('freesansbold.ttf', 14)
@@ -423,6 +426,7 @@ class Game:
                     if in_player_map(pos):
                         if self.board.place_ship(pos_to_coord(pos), horizontal, shipname):
                             del SHIP_LIST[0]
+                            play_arrangement_sound()
 
             self.surface.fill(YALEBLUE)
             self.board.draw(self.surface)
@@ -470,6 +474,9 @@ class Game:
 
                     if result == 'M':
                         human_turn = not human_turn
+                        play_miss_sound()
+                    else:
+                        play_hit_sound()
 
                     if sunk_ship:
                         self.info = 'Enemy\'s ' + sunk_ship + ' was destroyed!'
@@ -634,6 +641,18 @@ def draw_msglist(surface, font, left, msgs):
     for msg in msgs:
         base = base + 16
         draw_msg(surface, font, msg, (left, base))
+
+def play_hit_sound():
+    hit = pygame.mixer.Sound(HIT_SOUND_PATH)
+    hit.play(maxtime=1500)
+
+def play_miss_sound():
+    miss = pygame.mixer.Sound(MISS_SOUND_PATH)
+    miss.play(maxtime=1500)
+
+def play_arrangement_sound():
+    arr = pygame.mixer.Sound(ARR_SOUND_PATH)
+    arr.play()
 
 ################################################################################
 
