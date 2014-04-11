@@ -1,0 +1,13 @@
+Gameplay
+- Rotatable ship object
+- Bitmaps
+- Various bugs fix
+- Sound effects
+
+AI
+- Considered inference but not practical
+- Various AI bugs fix
+- Build heatmap AI (probability density functions)
+- Now have 3 versions of AIs (direction-based, heatmap)
+- Saba working on memory
+- Build AI benchmark tools
