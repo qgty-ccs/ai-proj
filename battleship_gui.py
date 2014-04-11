@@ -1,8 +1,8 @@
 '''
 CS 5100 Proj:   Battleship
 Team:           BigLeg
-Last Modified:  04/07/2014
-TODO:           1. Find bitmap for ships
+Last Modified:  04/10/2014
+TODO:           1. Find bitmap for ships (check)
                 2. Hit/Miss animation
                 3. Prevent player from clicking visited cells
 
