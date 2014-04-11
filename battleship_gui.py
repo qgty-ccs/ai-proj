@@ -18,7 +18,7 @@ from pygame.locals import *
 
 from PAdLib import draw as pagl_draw
 from pygbutton_src import pygbutton
-
+from randomgen import assignailoc
 from battleship_ai import *
 from shared import *
 
@@ -329,7 +329,8 @@ class Game:
         FPSCLOCK = pygame.time.Clock()
         self.surface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
         self.font = pygame.font.Font('freesansbold.ttf', 14)
-        self.board = Board(grid=init_grid())
+        self.board = Board(grid=init_grid(), fleet=[])
+        print self.board.fleet
         self.scoreboard = Scoreboard(font=self.font)
         pygame.display.set_caption('Battleship')
 
@@ -568,6 +569,7 @@ class Game:
     def reset_ingame_values(self):
         global SHIP_LIST, SHIP_LIST_BACKUP
         SHIP_LIST = copy.deepcopy(SHIP_LIST_BACKUP)
+        self.counter = 0
         print 'ingame values are reset'
 
 ################################################################################

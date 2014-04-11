@@ -9,7 +9,7 @@ TODO:           1. Fix AI bugs in opposite_direction (checked)
 
 import copy
 import random
-from shared import Ship, Map
+from shared import *
 
 MAPSIZE = 10
 HEALTH = 17
@@ -547,7 +547,7 @@ def init_human(mapsize, arrangement, fleet):
     my_map.generate_player_map(arrangement)
     enemy_map = Map(size=mapsize)
     enemy_map.generate_human_enemy_map()
-    return Human(my_map=my_map, enemy_map=enemy_map, fleet=fleet)
+    return Human(my_map=my_map, enemy_map=enemy_map, fleet=copy.deepcopy(fleet))
 
 
 def init_agent(mapsize, arrangement, fleet):
@@ -557,7 +557,8 @@ def init_agent(mapsize, arrangement, fleet):
     my_map.generate_player_map(arrangement)
     enemy_map = Map(size=mapsize)
     enemy_map.generate_ai_enemy_map()
-    return Agent(my_map=my_map, enemy_map=enemy_map, fleet=fleet)
+    return Agent(my_map=my_map, enemy_map=enemy_map, fleet=copy.deepcopy(fleet),
+        enemy_fleet=copy.deepcopy(ENEMY_FLEET))
 
 
 if __name__ == '__main__':
