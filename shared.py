@@ -99,6 +99,10 @@ class Map:
         '''
         self.m[x][y] = val
 
+    def apply_deltas(self, deltas):
+        for d in deltas.keys():
+            self.m[x][y] = self.m[x][y] + deltas[d]
+
 class Ship:
 
     coords = []
