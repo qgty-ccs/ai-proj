@@ -1,0 +1,59 @@
+This is a document describing the three algorithms we tested and presented in 
+final presentation slides.
+
+################################################################################
+
+1. Hunt & Target w Parity
+This algorithm has been described clearly in documentaions of previous 
+iterations. It starts with a hunt mode, hit cells randomly, and focuses on
+neighbor cells once a cell is hit. 
+
+Parity is used to improve the efficiency of hunt mode and can reduce the 
+random candidates to 1/2 of all undiscovered cells.
+
+2. Direction based algorithm
+This algorithm is based on H&T and is the basis of the two variants listed
+below. Once a cell is hit, it determines a direction (up, down, left or
+right) randomly or on purpose, and keep attacking cells on that direction. If
+reaches edge of map of a continuous area of ship cells, it turns back to the
+opposite direction and continue. After all possible locations of ships are
+visited, the algorithm returns to hunt mode.
+
+A serious problem which is not solved by this algorithm is aggregated layout
+like this:
+
+[X] [ ] [ ] [ ] [ ]
+[X] [ ] [ ] [ ]
+[X] [ ] [ ]
+
+If AI chooses vertical direction, hits all 3 cells on the left, and reaches end
+at both edges, it will enter hunt mode and miss the opportunity of eliminating 
+all three ships at once. Luckliy the rule of battleship allows opponent to get
+informed if any ship of enemy is sunk. The difference of how to use this 
+information leads to two variants of the original algorithm:
+
+2.1 Direction-based + priority
+	- Set neighbor cells to higher priority if a list of cells are hit, but no ship
+	sunk / the length of sunk ship is shorter than the length of hit list.
+	- Implemented in battleship_ai.py
+
+2.2 Direction-based + "linear bombardment"
+	- Add hit cells to candidates and use them as bases for future attacks.
+	- Details can be found here https://www.dropbox.com/s/msdwlemowf083mw/final.txt
+	(Written by Saba)
+	- Implemented in linear_ai.py
+
+3. Probability Density Functions
+We implemented a version based on the concept of this article:
+http://www.datagenetics.com/blog/december32011/
+The author didn't release the algorithm to public, but from the detailed steps we can
+see that many other optimizations are made duing the generation of probability
+distributions. We ran out of time and would not be able to implement every detail of
+these, but our conceptual implementation of algorithm still holds a significant 
+advantage over the other competitors.
+The AI file is heatmap_ai.py.
+
+4. Memory
+We implemented the memory feature of enemy's previous layouts, added them onto
+direction-based and heatmap AIs, and tested them against non-mem versions.
+The memorized versions can be found inside project dir, named "xxx_withmem.py".

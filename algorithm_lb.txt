@@ -1,0 +1,12 @@
+Final version of the AI algorithm:
+
+Whenever there is a hit, we pick a random orientation (vertical or horizontal) and call linearbombardment method on the coordinates of
+that cell with the picked direction.
+linearbombardment: takes in x, y and direction. For example, if the orientation is vertical, go up bombarding all cells in a line until
+you're at the edge of the map or there is a miss. When that happens, switch direction to the opposite (in this case, down) and move down
+from that cell, bombarding all cells in a line until you're at the edge of the map or there is a miss. If no ships are destroyed after
+both directions have been explored, switch orientation, and go through every visited cell, applying linearbombardment function to those
+cells with switched orientation. If a ship was destroyed during a linear bombardment, compare length of the destroyed ship with length of
+the linear bombardment. If the length matches, that's it. Else, take # of cells that correspond to the difference between length of linear
+bombardment and length of sunk ship that are furthest away from the cell which actually sunk the ship, switch orientation and perform linear
+bombardment on those cells with switched orientation.

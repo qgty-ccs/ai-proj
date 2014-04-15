@@ -1,0 +1,184 @@
+P vs LB
+
+AI 1
+Winning Percentage: 48.4 %
+Hits/Shots Fired Percentage: 28.9768911712 %
+Avg Steps to Win: 50.516
+Avg Thinking Time: 0.0462113964053
+**********
+AI 2
+Winning Percentage: 51.6 %
+Hits/Shots Fired Percentage: 29.6865829323 %
+Avg Steps to Win: 51.228
+Avg Thinking Time: 0.0512016864264
+
+P vs H
+
+AI 1
+Winning Percentage: 35.8 %
+Hits/Shots Fired Percentage: 29.2029145507 %
+Avg Steps to Win: 38.269
+Avg Thinking Time: 0.0511568337381
+**********
+AI 2
+Winning Percentage: 64.2 %
+Hits/Shots Fired Percentage: 33.6026487308 %
+Avg Steps to Win: 55.044
+Avg Thinking Time: 1.61981427649
+
+LB vs H
+
+AI 1
+Winning Percentage: 37.7 %
+Hits/Shots Fired Percentage: 30.0851981784 %
+Avg Steps to Win: 38.225
+Avg Thinking Time: 0.056121369272
+**********
+AI 2
+Winning Percentage: 62.3 %
+Hits/Shots Fired Percentage: 33.3986696416 %
+Avg Steps to Win: 55.625
+Avg Thinking Time: 1.63154972163
+
+
+Memory test
+
+(1)
+**********
+AI 1
+Winning Percentage: 40.0 %
+Hits/Shots Fired Percentage: 37.7128953771 %
+Avg Steps to Win: 33.6
+Avg Thinking Time: 1.58948418491
+**********
+AI 2
+Winning Percentage: 60.0 %
+Hits/Shots Fired Percentage: 37.25 %
+Avg Steps to Win: 47.5
+Avg Thinking Time: 1.60546
+
+(2)
+**********
+AI 1
+Winning Percentage: 30.0 %
+Hits/Shots Fired Percentage: 35.4523227384 %
+Avg Steps to Win: 20.1
+Avg Thinking Time: 1.64185574572
+**********
+AI 2
+Winning Percentage: 70.0 %
+Hits/Shots Fired Percentage: 34.900990099 %
+Avg Steps to Win: 61.2
+Avg Thinking Time: 1.58912128713
+
+(3)
+**********
+AI 1
+Winning Percentage: 50.0 %
+Hits/Shots Fired Percentage: 36.214953271 %
+Avg Steps to Win: 40.6
+Avg Thinking Time: 1.5679953271
+**********
+AI 2
+Winning Percentage: 50.0 %
+Hits/Shots Fired Percentage: 34.4578313253 %
+Avg Steps to Win: 43.7
+Avg Thinking Time: 1.62133975904
+
+(4)
+**********
+AI 1
+Winning Percentage: 40.0 %
+Hits/Shots Fired Percentage: 32.5581395349 %
+Avg Steps to Win: 37.3
+Avg Thinking Time: 1.55247145877
+**********
+AI 2
+Winning Percentage: 60.0 %
+Hits/Shots Fired Percentage: 32.7695560254 %
+Avg Steps to Win: 57.3
+Avg Thinking Time: 1.56810570825
+
+(5)
+**********
+AI 1
+Winning Percentage: 50.0 %
+Hits/Shots Fired Percentage: 33.7104072398 %
+Avg Steps to Win: 51.6
+Avg Thinking Time: 1.61640045249
+**********
+AI 2
+Winning Percentage: 50.0 %
+Hits/Shots Fired Percentage: 35.0220264317 %
+Avg Steps to Win: 38.0
+Avg Thinking Time: 1.53072026432
+
+(6)
+**********
+AI 1
+Winning Percentage: 50.0 %
+Hits/Shots Fired Percentage: 32.6963906582 %
+Avg Steps to Win: 53.5
+Avg Thinking Time: 1.68139065817
+**********
+AI 2
+Winning Percentage: 50.0 %
+Hits/Shots Fired Percentage: 33.3333333333 %
+Avg Steps to Win: 41.0
+Avg Thinking Time: 1.50175105485
+
+(7)
+**********
+AI 1
+Winning Percentage: 40.0 %
+Hits/Shots Fired Percentage: 34.1628959276 %
+Avg Steps to Win: 37.8
+Avg Thinking Time: 1.65837556561
+**********
+AI 2
+Winning Percentage: 60.0 %
+Hits/Shots Fired Percentage: 35.761589404 %
+Avg Steps to Win: 51.7
+Avg Thinking Time: 1.62018984547
+
+(8)
+**********
+AI 1
+Winning Percentage: 30.0 %
+Hits/Shots Fired Percentage: 29.8136645963 %
+Avg Steps to Win: 37.1
+Avg Thinking Time: 1.52969979296
+**********
+AI 2
+Winning Percentage: 70.0 %
+Hits/Shots Fired Percentage: 33.0677290837 %
+Avg Steps to Win: 61.4
+Avg Thinking Time: 1.40678087649
+
+(9)
+**********
+AI 1
+Winning Percentage: 40.0 %
+Hits/Shots Fired Percentage: 36.6430260047 %
+Avg Steps to Win: 30.8
+Avg Thinking Time: 1.72509219858
+**********
+AI 2
+Winning Percentage: 60.0 %
+Hits/Shots Fired Percentage: 36.1904761905 %
+Avg Steps to Win: 53.5
+Avg Thinking Time: 1.64273809524
+
+(10)
+**********
+AI 1
+Winning Percentage: 60.0 %
+Hits/Shots Fired Percentage: 32.2580645161 %
+Avg Steps to Win: 55.0
+Avg Thinking Time: 1.49806653226
+**********
+AI 2
+Winning Percentage: 40.0 %
+Hits/Shots Fired Percentage: 30.5154639175 %
+Avg Steps to Win: 43.1
+Avg Thinking Time: 1.56810721649
